@@ -9,13 +9,16 @@ import java.util.zip.ZipInputStream
 
 // map GDELT event codes onto a simpler classification
 //
-// 3 materially positive (improving situation)
-// 2 explicitly positive
-// 1 potentially positive (cooperative)
-// 0 neutral
-// -1 explitly negative
-// -2 materially negative
-// -3 lethal
+// +3 materially positive (actual improvements)
+// +2 explicitly positive (in word or deed)
+// +1 potentially positive (cooperative)
+//  0 neutral
+// -1 explicitly negative (in word or deed)
+// -2 materially negative (negative consequences)
+// -3 lethal (actual or suspected death)
+// -4 war, mass death
+//
+// See http://data.gdeltproject.org/documentation/CAMEO.Manual.1.1b3.pdf
 val scores = mapOf<String, Int>(
     "010" to 0,
     "011" to 0,
@@ -29,9 +32,9 @@ val scores = mapOf<String, Int>(
     "019" to 2,
 
     "020" to 0,
-    "021" to 1, // stritcly depends on sub code
+    "021" to 1, // strictly depends on sub code
     "022" to 1,
-    "023" to 2, // stritcly depends on sub code
+    "023" to 2, // strictly depends on sub code
     "024" to 1,
     "025" to 1,
     "026" to 0,
@@ -178,7 +181,7 @@ val scores = mapOf<String, Int>(
     "193" to -3,
     "194" to -4,
     "195" to -3,
-    "196" to -2,
+    "196" to -3,
 
     "200" to -4,
     "201" to -3,
@@ -204,7 +207,7 @@ private fun dump(outFile: String, map: MutableMap<Int, MutableMap<Int, Int>>) {
 }
 
 fun procZip(zip: File, map: MutableMap<Int, MutableMap<Int, Int>>, target: String) {
-    ZipInputStream(BufferedInputStream(FileInputStream(zip),16384)).use {
+    ZipInputStream(BufferedInputStream(FileInputStream(zip), 16384)).use {
         while (true) {
             val entry = it.nextEntry ?: break
             val csv = CSVReaderBuilder(
@@ -261,30 +264,40 @@ private fun process(
  * * ALL = unfiltered
  * * RELIG = any religious group/actor
  * * ETHNIC = any ethnic group/actor
- * Example religions are
+ * Religion of ethnic group codes can also be given. Example religions are:
  * * JEW = Judaism
  * * MOS = Islam
  * * CHR = Christianity
  * for more see https://www.gdeltproject.org/data/documentation/CAMEO.Manual.1.1b3.pdf
  */
 fun main(args: Array<String>) {
+    if (args.size < 3) {
+        System.err.println("At least source dir, pattern, and output-prefix must be given. See README.md.")
+        System.exit(1)
+    }
     val inDir = args[0]
     val regex = args[1].toRegex()
-    val outFile = args[2]
-    val filter = args[3].split(",")
+    val outFilePrefix = args[2]
+    val filter = if (args.size == 3) listOf("ALL") else args.drop(3).flatMap { it.split(",") }
+
+    System.err.println("Parsing $filter in $inDir/$regex")
+
     for (target in filter) {
 
         val map = mutableMapOf<Int, MutableMap<Int, Int>>()
 
-        try {
-            File(inDir).listFiles { _, name -> name.matches(regex) }
-                .forEach { inFile ->
-                    System.err.println("${OffsetDateTime.now()} $inFile")
+        val outFile = "$outFilePrefix-$target.csv"
+        File(inDir).listFiles { _, name -> name.matches(regex) }
+            .sortedBy { it.name }
+            .forEach { inFile ->
+                try {
+                    System.err.println("parsing $target in $inFile (time: ${OffsetDateTime.now()})")
                     procZip(inFile, map, target)
-                    dump("$outFile-$target.csv", map)
+                    dump(outFile, map) // continuously updated
+                } catch (e: Exception) {
+                    e.printStackTrace()
                 }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
+            }
+        System.err.println("Result for $target ib $outFile")
     }
 }

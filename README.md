@@ -53,9 +53,16 @@ due to the high number of ethic groups.
 
 For more see [GEDELT CAMEO Manual](https://www.gdeltproject.org/data/documentation/CAMEO.Manual.1.1b3.pdf)
 
-Example:
+# Examples
+Quick results for 2021:
 
-    java -jar target/gdelt-1.0-SNAPSHOT-with-dependencies.jar . ".*zip" out ALL,MUS,CHR,JEW,ETHNIC
+    java -jar target/gdelt-1.0-SNAPSHOT-with-dependencies.jar . "2021.*zip" out2021 ALL
+
+Full processing for multiple filter targets (may take multiple hours):
+
+    java -jar target/gdelt-1.0-SNAPSHOT-with-dependencies.jar . ".*zip" out ALL,MOS,CHR,JEW,ETHNIC
+
+The examples assume that the download has been run in the main directory (".").
 
 # Output
 
@@ -64,4 +71,8 @@ in the GDELT data set aggregated per month.
 For each rating level the number of presidential acts during that month is tallied.
 This can be easily diagrammed with a tool of your choice.
 
-Best results with a 100% stacked diagram axcluding neutral counts. 
+Best results with a 100% stacked diagram excluding neutral counts. 
+
+Here is an example with filter "ALL":
+
+![Presidential Conduct](presidential_conduct_ALL.png)
