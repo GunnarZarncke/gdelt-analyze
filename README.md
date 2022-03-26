@@ -1,14 +1,20 @@
 # Analyze GDELT data for presidential conduct
 
-The GDELT data contains summaries of press communication.
+There is so much conflicting information out there about the US president that
+it is hard to make sense of without being biased by ones sources. 
+The only way out is to use *all* sources. Impossible?
+
+No! The [GDELT](https://www.gdeltproject.org/) data contains summaries of a large 
+part of all press communication world-wide.
+
 These summaries include 
 * date and time
 * location
 * involved parties
 * a coding of the reported activity
 
-This data is filtered for mentions of the US president
-(one clearly identifiable actor).
+I wrote this small program that filters all of this data for mentions of the US president
+(luckily one clearly identifiable actor, will not work for your mom).
 The activity coding of the resulting records is translated into a 
 positive/negative rating according to the following scheme:
 
@@ -20,7 +26,15 @@ positive/negative rating according to the following scheme:
 * -2 materially negative
 * -3 lethal
 
-See source for more details.
+There are options for further filtering the target of the presidential speech or action.
+It should be very easy to adapt this to other important actors.
+See the source for more details.
+
+# Prerequisites
+
+* Java 1.8+
+* [Maven](https://maven.apache.org/download.cgi)
+* Shell (Linux or Cygwin) for easy download of the GDELT data
 
 # Usage
 
